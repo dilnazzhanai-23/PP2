@@ -1,4 +1,8 @@
-x=int(input())
-l=list(map(int, input().split()))
-lam=list(map( lambda y: y%2==0, l))
-print(lam)
+class Person :
+    def __init__(self,name) :
+        self.name=name   
+    def print(self) :
+        print(self.name )
+
+p1=Person("Azhar")
+p1.print()

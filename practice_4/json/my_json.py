@@ -1,7 +1,7 @@
 import json
 import os
 
-script_dir = os.path.dirname(os.path.abspath(_file_))
+script_dir = os.path.dirname(os.path.abspath(__file__))
 json_path = os.path.join(script_dir, "PP2", "sample.json")
 
 with open(json_path, "r") as file:

@@ -2,7 +2,7 @@ import json
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-json_path = os.path.join(script_dir, "sample-data.json")
+json_path = os.path.join(script_dir, "sample.json")
 
 with open(json_path, "r") as file:
     data = json.load(file)

@@ -1,8 +1,8 @@
 import json
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-json_path = os.path.join(script_dir, "sample.json")
+script_dir = os.path.dirname(os.path.abspath(_file_))
+json_path = os.path.join(script_dir, "PP2", "sample.json")
 
 with open(json_path, "r") as file:
     data = json.load(file)
@@ -13,7 +13,7 @@ print(f"{'DN':50} {'Description':20} {'Speed':8} {'MTU':6}")
 print("-" * 80)
 
 for item in data["imdata"]:
-    attributes = item["l1PhysIf"]["attributes"]
+    attributes = item.get("l1PhysIf", {}).get("attributes", {})
 
     dn = attributes.get("dn", "")
     descr = attributes.get("descr", "")

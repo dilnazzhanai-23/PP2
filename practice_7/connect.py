@@ -1,19 +1,14 @@
-
 import psycopg2
 
 conn=psycopg2.connect(
     host='localhost',
     port=5432,
     dbname="pp2_db",
-    user="pp2",
-    password="pp2_password"
+    user="postgres",
+    password="2313147078Dilnaz"
 )
 
 cur=conn.cursor()
 print(conn.status)
-
-cur.execute("select version();")
-print(cur.fetchone())
-
 cur.close()
 conn.close()

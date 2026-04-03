@@ -11,6 +11,8 @@ def table():
     """)
     conn.commit()
 
+table()
+
 def show():
     print("Search:")
     x=input()

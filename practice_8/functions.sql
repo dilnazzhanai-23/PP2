@@ -23,23 +23,3 @@ BEGIN
         LIMIT p_limit OFFSET p_offset;
 END;
 $$;
-
-
-
-
-
-CREATE OR REPLACE FUNCTION update_number(p_name VARCHAR, p_number VARCHAR) 
-RETURNS TEXT
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    UPDATE  phonebook2 
-    SET number=p_number
-    WHERE name=p_name;
-    IF FOUND THEN
-        RETURN 'Updated';
-    ELSE 
-        RETURN 'User not found';
-    END IF;
-END;
-$$;

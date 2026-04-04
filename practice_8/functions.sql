@@ -1,17 +1,17 @@
-CREATE OR REPLACE FUNCTION show_name_or_phone(pattern VARCHAR):
+CREATE OR REPLACE FUNCTION show_name_or_phone(pattern VARCHAR)
 RETURNS TABLE(id INT, name VARCHAR(100), number VARCHAR(100)) 
 LANGUAGE plpgsql
 AS $$
 BEGIN 
     RETURN QUERY
-        SELECT * 
-        FROM phonebook2 
-        WHERE name ILIKE '%' || pattern || '%'
-        OR number ILIKE '%' || pattern || '%';
+        SELECT p.id, p.name, p.number
+        FROM phonebook2 p
+        WHERE p.name ILIKE '%' || pattern || '%'
+        OR p.number ILIKE '%' || pattern || '%';
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION get_phonebook_paginated(p_limit INT, p_offset INT ):
+CREATE OR REPLACE FUNCTION get_phonebook_paginated(p_limit INT, p_offset INT )
 RETURNS TABLE(id INT,name VARCHAR, number VARCHAR)
 LANGUAGE plpgsql
 AS $$
@@ -28,17 +28,18 @@ $$;
 
 
 
-CREATE OR REPLACE FUNCTION update_number(p_name VARCHAR, p_number VARCHAR) :
-RETURN TEXT
+CREATE OR REPLACE FUNCTION update_number(p_name VARCHAR, p_number VARCHAR) 
+RETURNS TEXT
 LANGUAGE plpgsql
 AS $$
 BEGIN
     UPDATE  phonebook2 
     SET number=p_number
     WHERE name=p_name;
-    IF FOUND THEN:
-        RETURN "Updated"
+    IF FOUND THEN
+        RETURN 'Updated';
     ELSE 
-        RETURN "User not found"
+        RETURN 'User not found';
+    END IF;
 END;
 $$;

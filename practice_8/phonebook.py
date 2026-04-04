@@ -2,6 +2,16 @@ import psycopg2
 from connect import connection
 conn=connection()
 cur=conn.cursor()
+
+with open("procedures.sql", "r") as f:
+    cur.execute(f.read())
+    conn.commit()
+
+with open("functions.sql", "r") as f:
+    cur.execute(f.read())
+    conn.commit()
+
+
 def table():
     cur.execute("""CREATE TABLE IF NOT EXISTS phonebook2 (
     id      SERIAL          PRIMARY KEY,

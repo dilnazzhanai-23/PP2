@@ -1,9 +1,9 @@
-CREATE OR REPLACE PROCEDURE insert_or_update(p_name VARCHAR, p_number VARCHAR):
+CREATE OR REPLACE PROCEDURE insert_or_update(p_name VARCHAR, p_number VARCHAR)
 LANGUAGE plpgsql
 AS $$
 BEGIN 
-    IF EXIST(SELESCT 1 FROM phonebook2 WHERE name=p_name ) THEN
-        UPDATE phonebook2
+    IF EXISTS(SELECT 1 FROM phonebook2 WHERE name=p_name ) THEN
+        UPDATE phonebook2 
         SET number=p_number
         WHERE name=p_name;
     ELSE 

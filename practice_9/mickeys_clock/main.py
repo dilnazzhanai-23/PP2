@@ -4,7 +4,7 @@ from clock import MickeyClock
 
 pygame.init()
 
-screen = pygame.display.set_mode((1200, 700))
+screen = pygame.display.set_mode((700, 700))
 pygame.display.set_caption("Mickey Clock")
 
 WHITE = (255, 255, 255)

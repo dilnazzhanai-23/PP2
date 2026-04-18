@@ -5,7 +5,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 400, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Mickey Music Player")
+pygame.display.set_caption("Music Player")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

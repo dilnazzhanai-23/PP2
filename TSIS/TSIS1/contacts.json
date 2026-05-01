@@ -1,0 +1,13 @@
+[
+    {
+        "id": 1,
+        "first_name": "Zhanai",
+        "second_name": "Dilnaz",
+        "email": "dilka@gmail.com",
+        "birthday": "2007-10-23",
+        "group": "Family",
+        "phones": [
+            "+77719025161"
+        ]
+    }
+]

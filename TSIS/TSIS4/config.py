@@ -1,0 +1,5 @@
+host = "localhost"
+port = "5432"
+dbname = "snake_db"
+user = "postgres"
+password = "2313147078Dilnaz"

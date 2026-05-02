@@ -1,144 +1,137 @@
 import pygame
-import math
-from tools import *
+import sys
+from datetime import datetime
+from tools import draw_generic_shape, flood_fill
 
-# Initialization
-pygame.init()
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pygame Paint Pro")
-clock = pygame.time.Clock()
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((640, 480))
+    pygame.display.set_caption("Pygame Paint")
+    clock = pygame.time.Clock()
+    
+    current_color = (255, 0, 0) 
+    mode = 'pen' 
+    brush_size = 3
+    
+    points = [] 
+    drawing = False
+    start_pos = None
+    last_pos = None 
 
-# Layers
-base_layer = pygame.Surface((WIDTH, HEIGHT))
-base_layer.fill("black")
+    text_active = False
+    text_pos = (0, 0)
+    text_buffer = ""
+    font = pygame.font.SysFont(None, 24)
 
-# Colors
-COLORS = {"red": (255, 0, 0), "green": (0, 255, 0), "blue": (0, 0, 255), "white": (255, 255, 255), "black": (0, 0, 0)}
-current_color = COLORS["red"]
+    while True:
+        screen.fill((0, 0, 0))
+        
+        
+        for shape_type, color, data, thick in points:
+            if shape_type == 'line':
+                
+                pygame.draw.line(screen, color, data[0], data[1], thick)
+            elif shape_type == 'pixel':
+                screen.set_at(data, color)
+            elif shape_type == 'text':
+                text_surf = font.render(data, True, color)
+                screen.blit(text_surf, thick)
+            else:
+                draw_generic_shape(screen, shape_type, color, data[0], data[1], thick)
 
-# State Variables
-running = True
-LMBpressed = False
-THICKNESS = 5  # Default Medium
-mode = "pencil"
+        
+        if drawing and mode not in ['pen', 'eraser', 'fill', 'text']:
+            draw_generic_shape(screen, mode, current_color, start_pos, pygame.mouse.get_pos(), brush_size)
 
-startX, startY = 0, 0
-currX, currY = 0, 0
-prevX, prevY = 0, 0
+        
+        if text_active:
+            text_surf = font.render(text_buffer + "|", True, current_color)
+            screen.blit(text_surf, text_pos)
 
-# Text Tool Variables
-font = pygame.font.SysFont("Arial", 24)
-text_buffer = ""
-text_pos = (0, 0)
-typing = False
-
-
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        # TEXT TOOL LOGIC
-        if typing:
-            if event.type == pygame.KEYDOWN:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            
+            if text_active and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    # Commit text to base layer
-                    text_surf = font.render(text_buffer, True, current_color)
-                    base_layer.blit(text_surf, text_pos)
+                    points.append(('text', current_color, text_buffer, text_pos))
+                    text_active = False
                     text_buffer = ""
-                    typing = False
                 elif event.key == pygame.K_ESCAPE:
+                    text_active = False
                     text_buffer = ""
-                    typing = False
                 elif event.key == pygame.K_BACKSPACE:
                     text_buffer = text_buffer[:-1]
-            elif event.type == pygame.TEXTINPUT:
-                text_buffer += event.text
-            continue # Skip other inputs while typing
+                else:
+                    if event.unicode.isprintable():
+                        text_buffer += event.unicode
+                continue 
+            keys = pygame.key.get_pressed()
+            if event.type == pygame.KEYDOWN:
+                
+                if event.key == pygame.K_r: current_color = (255, 0, 0)
+                if event.key == pygame.K_g: current_color = (0, 255, 0)
+                if event.key == pygame.K_b: current_color = (0, 0, 255)
+                if event.key == pygame.K_w: current_color = (255, 255, 255)
+                
+                
+                if event.key == pygame.K_4: mode = 'right_triangle'
+                if event.key == pygame.K_5: mode = 'equilateral_triangle'
+                if event.key == pygame.K_6: mode = 'rhombus'
+                if event.key == pygame.K_7: mode = 'eraser'
+                if event.key == pygame.K_8: mode = 'circle'
+                if event.key == pygame.K_9: mode = 'rect'
+                if event.key == pygame.K_0: mode = 'square'
+                
+                
+                if event.key == pygame.K_p: mode = 'pen'
+                if event.key == pygame.K_l: mode = 'straight_line'
+                if event.key == pygame.K_f: mode = 'fill'
+                if event.key == pygame.K_t: mode = 'text'
 
-        # MOUSE EVENTS
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            LMBpressed = True
-            startX, startY = event.pos
-            prevX, prevY = event.pos
             
-            if mode == "fill":
-                flood_fill(base_layer, startX, startY, current_color)
-            elif mode == "text":
-                typing = True
-                text_pos = (startX, startY)
+                if event.key == pygame.K_1: brush_size = 2
+                if event.key == pygame.K_2: brush_size = 5
+                if event.key == pygame.K_3: brush_size = 10
 
-        if event.type == pygame.MOUSEMOTION:
-            if LMBpressed:
-                currX, currY = event.pos
-                if mode == "pencil":
-                    pygame.draw.line(base_layer, current_color, (prevX, prevY), (currX, currY), THICKNESS)
-                    prevX, prevY = currX, currY
-                elif mode == "eraser":
-                    pygame.draw.circle(base_layer, COLORS["black"], (currX, currY), THICKNESS * 2)
+                
+                if event.key == pygame.K_s and (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]):
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"canvas_{timestamp}.png"
+                    pygame.image.save(screen, filename)
+                    print(f"Canvas saved as {filename}")
 
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            LMBpressed = False
-            currX, currY = event.pos
-            # Finalize shapes on base_layer
-            if mode == "line":
-                pygame.draw.line(base_layer, current_color, (startX, startY), (currX, currY), THICKNESS)
-            elif mode == "rect":
-                pygame.draw.rect(base_layer, current_color, calculate_rect(startX, startY, currX, currY), THICKNESS)
-            elif mode == "square":
-                pygame.draw.rect(base_layer, current_color, get_square_rect(startX, startY, currX, currY), THICKNESS)
-            elif mode == "circle":
-                radius = int(math.hypot(currX - startX, currY - startY))
-                pygame.draw.circle(base_layer, current_color, (startX, startY), radius, THICKNESS)
-            elif mode == "right_tri":
-                pygame.draw.polygon(base_layer, current_color, get_right_tri_pts(startX, startY, currX, currY), THICKNESS)
-            elif mode == "eq_tri":
-                pygame.draw.polygon(base_layer, current_color, get_eq_tri_pts(startX, startY, currX, currY), THICKNESS)
-            elif mode == "rhombus":
-                pygame.draw.polygon(base_layer, current_color, get_rhombus_pts(startX, startY, currX, currY), THICKNESS)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mode == 'text':
+                    text_active = True
+                    text_pos = event.pos
+                    text_buffer = ""
+                elif mode == 'fill':
+                    target_color = screen.get_at(event.pos)[:3]
+                    if target_color != current_color:
+                        flood_fill(screen, event.pos, target_color, current_color, points)
+                else:
+                    drawing = True
+                    start_pos = event.pos
+                    last_pos = event.pos 
 
-        # KEYBOARD SHORTCUTS
-        if event.type == pygame.KEYDOWN:
-            # Ctrl+S to Save
-            if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                save_canvas(base_layer)
-            
-            # Color Selection
-            if event.key == pygame.K_r: current_color = COLORS["red"]
-            if event.key == pygame.K_g: current_color = COLORS["green"]
-            if event.key == pygame.K_b: current_color = COLORS["blue"]
-            
-            # Tool Selection
-            tools = {pygame.K_p: "pencil", pygame.K_l: "line", pygame.K_f: "fill", pygame.K_t: "text", 
-                     pygame.K_e: "eraser", pygame.K_r: "rect", pygame.K_c: "circle"}
-            if event.key in tools: mode = tools[event.key]
-            
-            # Thickness Selection
-            if event.key == pygame.K_1: THICKNESS = 2   # Small
-            if event.key == pygame.K_2: THICKNESS = 5   # Medium
-            if event.key == pygame.K_3: THICKNESS = 10  # Large
+            if event.type == pygame.MOUSEBUTTONUP:
+                if drawing and mode not in ['pen', 'eraser', 'fill', 'text']:
+                    points.append((mode, current_color, (start_pos, event.pos), brush_size))
+                drawing = False
+                last_pos = None 
 
-    # RENDERING
-    screen.blit(base_layer, (0, 0))
+            if event.type == pygame.MOUSEMOTION and drawing:
+                if mode == 'pen' or mode == 'eraser':
+                    color = (0, 0, 0) if mode == 'eraser' else current_color
+                    thick = 20 if mode == 'eraser' else brush_size
+                    
+                    points.append(('line', color, (last_pos, event.pos), thick))
+                    last_pos = event.pos 
 
-    # Live Previews
-    if LMBpressed:
-        if mode == "line":
-            pygame.draw.line(screen, current_color, (startX, startY), pygame.mouse.get_pos(), THICKNESS)
-        elif mode == "rect":
-            pygame.draw.rect(screen, current_color, calculate_rect(startX, startY, *pygame.mouse.get_pos()), THICKNESS)
+        pygame.display.flip()
+        clock.tick(60)
 
-
-    if typing:
-        preview_text = font.render(text_buffer + "|", True, current_color)
-        screen.blit(preview_text, text_pos)
-
-    # UI Overlay
-    info = font.render(f"Mode: {mode} | Size: {THICKNESS} | Color: {current_color}", True, "gray")
-    screen.blit(info, (10, HEIGHT - 30))
-
-    pygame.display.flip()
-    clock.tick(60)
-
-pygame.quit()
+main()

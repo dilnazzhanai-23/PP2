@@ -1,50 +1,63 @@
 import pygame
 import math
-from datetime import datetime
 
-def calculate_rect(x1, y1, x2, y2):
-    return pygame.Rect(min(x1, x2), min(y1, y2), abs(x1 - x2), abs(y1 - y2))
+def draw_generic_shape(surface, shape_type, color, start, end, thickness):
+    
+    x1, y1 = start
+    x2, y2 = end
+    dx, dy = x2 - x1, y2 - y1
 
-def get_square_rect(x1, y1, x2, y2):
-    side = max(abs(x2 - x1), abs(y2 - y1))
-    new_x = x1 if x2 > x1 else x1 - side
-    new_y = y1 if y2 > y1 else y1 - side
-    return pygame.Rect(new_x, new_y, side, side)
+    if shape_type == 'rect':
+        rect = pygame.Rect(min(x1, x2), min(y1, y2), abs(dx), abs(dy))
+        pygame.draw.rect(surface, color, rect, thickness)
 
-def get_right_tri_pts(x1, y1, x2, y2):
-    return [(x1, y1), (x1, y2), (x2, y2)]
+    elif shape_type == 'circle':
+        radius = int(math.sqrt(dx**2 + dy**2))
+        pygame.draw.circle(surface, color, start, radius, thickness)
 
-def get_eq_tri_pts(x1, y1, x2, y2):
-    side = x2 - x1
-    height = (math.sqrt(3) / 2) * side
-    return [(x1 + side/2, y1), (x1, y1 + height), (x1 + side, y1 + height)]
+    elif shape_type == 'square':
+        side = max(abs(dx), abs(dy))
+        rect = pygame.Rect(x1 if x2 > x1 else x1 - side, y1 if y2 > y1 else y1 - side, side, side)
+        pygame.draw.rect(surface, color, rect, thickness)
 
-def get_rhombus_pts(x1, y1, x2, y2):
-    mid_x = x1 + (x2 - x1) / 2
-    mid_y = y1 + (y2 - y1) / 2
-    return [(mid_x, y1), (x1, mid_y), (mid_x, y2), (x2, mid_y)]
+    elif shape_type == 'right_triangle':
+        v = [start, end, (x1, y2)]
+        pygame.draw.polygon(surface, color, v, thickness)
 
-def save_canvas(surface):
-    filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-    pygame.image.save(surface, filename)
-    print(f"Saved as {filename}")
+    elif shape_type == 'equilateral_triangle':
+        height = int((math.sqrt(3) / 2) * dx)
+        v = [start, (x2, y1), (x1 + dx // 2, y1 - height)]
+        pygame.draw.polygon(surface, color, v, thickness)
 
-def flood_fill(surface, x, y, new_color):
-    """Stack-based flood fill to avoid recursion limits."""
+    elif shape_type == 'rhombus':
+        v = [(x1 + dx // 2, y1), (x2, y1 + dy // 2), (x1 + dx // 2, y2), (x1, y1 + dy // 2)]
+        pygame.draw.polygon(surface, color, v, thickness)
+        
+    elif shape_type == 'straight_line':
+        pygame.draw.line(surface, color, start, end, thickness)
+
+def flood_fill(surface, start_pos, target_color, fill_color, points_list):
+    
     width, height = surface.get_size()
-    target_color = surface.get_at((x, y))
-    if target_color == new_color:
-        return
-
-    stack = [(x, y)]
+    stack = [start_pos]
+    visited = set()
+    
     while stack:
-        curr_x, curr_y = stack.pop()
-        if surface.get_at((curr_x, curr_y)) != target_color:
+        x, y = stack.pop()
+        
+        if (x, y) in visited:
             continue
-
-        surface.set_at((curr_x, curr_y), new_color)
-
-        if curr_x + 1 < width: stack.append((curr_x + 1, curr_y))
-        if curr_x - 1 >= 0: stack.append((curr_x - 1, curr_y))
-        if curr_y + 1 < height: stack.append((curr_x, curr_y + 1))
-        if curr_y - 1 >= 0: stack.append((curr_x, curr_y - 1))
+        visited.add((x, y))
+        
+        if x < 0 or x >= width or y < 0 or y >= height:
+            continue
+            
+        current_pixel = surface.get_at((x, y))[:3]
+        if current_pixel == target_color:
+            points_list.append(('pixel', fill_color, (x, y), 1))
+            surface.set_at((x, y), fill_color)
+            
+            stack.append((x + 1, y))
+            stack.append((x - 1, y))
+            stack.append((x, y + 1))
+            stack.append((x, y - 1))

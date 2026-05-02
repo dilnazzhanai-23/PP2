@@ -11,8 +11,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         
         filename = f"assets/{color_name}.png"
-        
-        # Просто загружаем изображение (без удаления фона)
+
         self.image = pygame.image.load(filename).convert_alpha()
         
         self.rect = self.image.get_rect()
